@@ -2,7 +2,7 @@ import os
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-from app.api_client import api_get
+from api_client import api_get
 import pandas as pd
 from wordcloud import WordCloud
 
@@ -75,7 +75,6 @@ try:
         if datosNube:
             frecuenciasLimpias = {str(palabra): freq for palabra, freq in datosNube.items()}
             
-            #Generación de la Nube
             nube = WordCloud(width=800, height=400, background_color="white",colormap="viridis").generate_from_frequencies(frecuenciasLimpias)
             
             st.image(nube.to_image())
@@ -85,3 +84,17 @@ try:
 except Exception as e:
     st.error(f"Error al conectar con la API: {e}")
     st.info("Asegúrate de que el servidor de FastAPI esté corriendo en la dirección configurada.")
+
+st.sidebar.write("Buscador (2.2)")
+frase_ingresada = st.sidebar.text_input("Frase: ", value="")
+st.write("Buscador (2.2)")
+if frase_ingresada:
+    try:
+        frases_similares = api_get( DEFAULT_API_URL,"/api/buscador/buscar", params={"frase": frase_ingresada, "n": 20})
+        if frases_similares:
+            df_similares = pd.DataFrame(frases_similares)
+            st.dataframe(df_similares, hide_index=True, use_container_width=True)
+        else:
+            st.info("No se encontraron versículos similares.")
+    except Exception as e:
+        st.sidebar.error(f"Error al conectar con la API: {e}")

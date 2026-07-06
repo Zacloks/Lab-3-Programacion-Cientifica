@@ -1,9 +1,10 @@
-from  fastapi import FastAPI
+from fastapi import FastAPI, Query
 from typing import Optional
 from api.loader.cargador_datos import CargadorDatos
 from api.dashboard import Dashboard
 from api.preprocesar import Preprocesador
-    
+from api.buscador import Buscador
+
 app = FastAPI(title = "API Biblia")
 
 cargador = CargadorDatos()
@@ -13,6 +14,8 @@ preprocesador = Preprocesador(df)
 df = preprocesador.preprocesar()
 
 dashboard = Dashboard(df)
+
+buscador = Buscador(df)
 
 @app.get("/api/dashboard/versiculos-por-libro")
 def versiculos_por_libro(testamento: Optional[str] = None, libro: Optional[str] = None, capitulo: Optional[int] = None):
@@ -33,3 +36,9 @@ def top_palabras(testamento: Optional[str] = None, libro: Optional[str] = None, 
 def nube_palabras(testamento: Optional[str] = None, libro: Optional[str] = None, capitulo: Optional[str] = None):
     resultado = dashboard.nube_palabras(n = 100, testamento = testamento, libro = libro, capitulo = capitulo)
     return resultado
+
+@app.get("/api/buscador/buscar")
+def buscar_versiculos(frase: str = Query(..., min_length=1, description="Frase a buscar"),n: int = Query(20, ge=1, le=100),):
+    resultado = buscador.buscar(frase, n)
+    columnas = ["nombre_libro", "capitulo", "versiculo", "texto_versiculo", "similitud"]
+    return resultado[columnas].to_dict(orient="records")
