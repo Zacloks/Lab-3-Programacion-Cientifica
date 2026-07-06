@@ -1,16 +1,87 @@
 import os
 import requests
 import streamlit as st
-
 from dotenv import load_dotenv
+from app.api_client import api_get
+import pandas as pd
+from wordcloud import WordCloud
 
 st.set_page_config(
-    page_title = "Mi primera pagina",
+    page_title = "Dashboard Biblia",
     layout = "wide"
 )
 
 load_dotenv()
-
 DEFAULT_API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
-st.title("Mi primer dashboard")
+st.title("Dashboard Principal")
+
+st.sidebar.header("Filtros de Búsqueda")
+testamentoSeleccionado = st.sidebar.selectbox("Testamento", {"Todos", "Old Testament", "New Testament"})
+libroSeleccionado = st.sidebar.text_input("Nombre del Libro (ej. Genesis, Matthwe)", value = "")
+capituloSeleccionado = st.sidebar.text_input("Capítulo (dejar vacío para todo el libro)", value = "")
+
+testamentos = {"Old Testament": "OT", "New Testament": "NT"}
+
+parametros = {}
+if testamentoSeleccionado != "Todos":
+    parametros["testamento"] = testamentos[testamentoSeleccionado]
+
+if libroSeleccionado:
+    parametros["libro"] = libroSeleccionado
+
+if capituloSeleccionado.isdigit():
+    parametros["capitulo"] = int(capituloSeleccionado)
+    
+try:
+    columna1, columna2 = st.columns(2)
+
+    with columna1:
+        st.subheader("Cantidad de Versículos por Libro")
+        datosVersiculos = api_get(DEFAULT_API_URL, "/api/dashboard/versiculos-por-libro", params = parametros)
+        
+        if datosVersiculos:
+            df = pd.DataFrame(list(datosVersiculos.items()), columns=["Nombre del Libro", "Total de Versículos"])
+            st.dataframe(df, hide_index = True, use_container_width = True)
+        else:
+            st.info("No se encontraron datos para los filtros aplicados.")
+            
+    with columna2:
+        st.subheader("Longitud Promedio de Versículos")
+        datosLongitud = api_get(DEFAULT_API_URL, "/api/dashboard/longitud-promedio", params = parametros)
+        
+        if datosLongitud:
+            df = pd.DataFrame(list(datosLongitud.items()), columns=["Nombre del Libro", "Longitud Promedio (Caracteres)"])
+            st.dataframe(df, hide_index = True, use_container_width = True)
+        else:
+            st.info("No se encontraron datos para los filtros aplicados.")
+    
+    st.markdown("---")
+    columna3, columna4 = st.columns(2)
+    
+    with columna3:
+        st.subheader("Top Palabras más Frecuentes")
+        datosTop = api_get(DEFAULT_API_URL, "/api/dashboard/top-palabras", params = parametros)
+        
+        if datosTop:
+            st.dataframe(datosTop, use_container_width = True)
+        else:
+            st.info("No se encontraron palabras")
+    
+    with columna4:
+        st.subheader("Nube de Palabras")
+        datosNube = api_get(DEFAULT_API_URL, "/api/dashboard/nube-palabras", params = parametros)
+        
+        if datosNube:
+            frecuenciasLimpias = {str(palabra): freq for palabra, freq in datosNube.items()}
+            
+            #Generación de la Nube
+            nube = WordCloud(width=800, height=400, background_color="white",colormap="viridis").generate_from_frequencies(frecuenciasLimpias)
+            
+            st.image(nube.to_image())
+        else:
+            st.info("No se encontraron palabras para generar la nube")
+            
+except Exception as e:
+    st.error(f"Error al conectar con la API: {e}")
+    st.info("Asegúrate de que el servidor de FastAPI esté corriendo en la dirección configurada.")
