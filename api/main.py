@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException
 from typing import Optional
 from api.loader.cargador_datos import CargadorDatos
 from api.dashboard import Dashboard
 from api.preprocesar import Preprocesador
 from api.buscador import Buscador
+from api.generador import GeneradorNgramas
 
 app = FastAPI(title = "API Biblia")
 
@@ -16,6 +17,8 @@ df = preprocesador.preprocesar()
 dashboard = Dashboard(df)
 
 buscador = Buscador(df)
+
+generador = GeneradorNgramas(df, orden_maximo = 3)
 
 @app.get("/api/dashboard/versiculos-por-libro")
 def versiculos_por_libro(testamento: Optional[str] = None, libro: Optional[str] = None, capitulo: Optional[int] = None):
@@ -33,7 +36,7 @@ def top_palabras(testamento: Optional[str] = None, libro: Optional[str] = None, 
     return [{"Palabra": palabra, "Frecuencia": frecuencia} for palabra, frecuencia in top]
 
 @app.get("/api/dashboard/nube-palabras")
-def nube_palabras(testamento: Optional[str] = None, libro: Optional[str] = None, capitulo: Optional[str] = None):
+def nube_palabras(testamento: Optional[str] = None, libro: Optional[str] = None, capitulo: Optional[int] = None):
     resultado = dashboard.nube_palabras(n = 100, testamento = testamento, libro = libro, capitulo = capitulo)
     return resultado
 
@@ -42,3 +45,18 @@ def buscar_versiculos(frase: str = Query(..., min_length=1, description="Frase a
     resultado = buscador.buscar(frase, n)
     columnas = ["nombre_libro", "capitulo", "versiculo", "texto_versiculo", "similitud"]
     return resultado[columnas].to_dict(orient="records")
+
+@app.get("/api/generador/modelos")
+def generador_modelos():
+    return generador.modelos_disponibles()
+
+@app.get("/api/generador/generar")
+def generar_versiculo(
+    modelo: str = Query("bigram", description="unigram, bigram o trigram"),
+    palabra_inicial: str = Query("", description="Palabra inicial (opcional)"),
+    largo_maximo: int = Query(30, ge=1, le=200, description="Maximo de palabras a generar"),
+):
+    try:
+        return generador.generar(modelo, palabra_inicial, largo_maximo)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
