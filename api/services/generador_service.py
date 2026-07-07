@@ -11,7 +11,6 @@ MODELOS = {
     "trigram": 3,
 }
 
-
 class GeneradorNgramas:
     """Modelo generativo de texto basado en n-gramas construido sobre el corpus biblico.
 

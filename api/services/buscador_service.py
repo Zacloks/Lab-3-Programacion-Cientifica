@@ -4,7 +4,7 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from api.preprocesar import Preprocesador
+from api.services.preprocesar import Preprocesador
 
 STOP_WORDS = list(stopwords.words("english"))
 

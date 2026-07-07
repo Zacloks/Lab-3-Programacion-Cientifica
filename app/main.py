@@ -18,11 +18,11 @@ st.title("Análisis del Corpus Bíblico")
 st.sidebar.title("Navegación")
 seccion = st.sidebar.radio(
     "Sección",
-    ["📊 Dashboard", "🔎 Buscador", "✍️ Generador"],
+    ["Dashboard", "Buscador", "Generador"],
     label_visibility = "collapsed",
 )
 
-if seccion == "📊 Dashboard":
+if seccion == "Dashboard":
     st.sidebar.header("Filtros de Búsqueda")
     testamentoSeleccionado = st.sidebar.selectbox("Testamento", ["Todos", "Old Testament", "New Testament"])
     libroSeleccionado = st.sidebar.text_input("Nombre del Libro (ej. Genesis, Matthew)", value = "")
@@ -43,7 +43,7 @@ if seccion == "📊 Dashboard":
 
         with columna1:
             st.subheader("Cantidad de Versículos por Libro")
-            datosVersiculos = api_get(DEFAULT_API_URL, "/api/dashboard/versiculos-por-libro", params = parametros)
+            datosVersiculos = api_get(DEFAULT_API_URL, "/dashboard/versiculos-por-libro", params = parametros)
 
             if datosVersiculos:
                 df = pd.DataFrame(list(datosVersiculos.items()), columns=["Nombre del Libro", "Total de Versículos"])
@@ -53,7 +53,7 @@ if seccion == "📊 Dashboard":
 
         with columna2:
             st.subheader("Longitud Promedio de Versículos")
-            datosLongitud = api_get(DEFAULT_API_URL, "/api/dashboard/longitud-promedio", params = parametros)
+            datosLongitud = api_get(DEFAULT_API_URL, "/dashboard/longitud-promedio", params = parametros)
 
             if datosLongitud:
                 df = pd.DataFrame(list(datosLongitud.items()), columns=["Nombre del Libro", "Longitud Promedio (Caracteres)"])
@@ -66,7 +66,7 @@ if seccion == "📊 Dashboard":
 
         with columna3:
             st.subheader("Top Palabras más Frecuentes")
-            datosTop = api_get(DEFAULT_API_URL, "/api/dashboard/top-palabras", params = parametros)
+            datosTop = api_get(DEFAULT_API_URL, "/dashboard/top-palabras", params = parametros)
 
             if datosTop:
                 st.dataframe(datosTop, use_container_width = True)
@@ -75,7 +75,7 @@ if seccion == "📊 Dashboard":
 
         with columna4:
             st.subheader("Nube de Palabras")
-            datosNube = api_get(DEFAULT_API_URL, "/api/dashboard/nube-palabras", params = parametros)
+            datosNube = api_get(DEFAULT_API_URL, "/dashboard/nube-palabras", params = parametros)
 
             if datosNube:
                 frecuenciasLimpias = {str(palabra): freq for palabra, freq in datosNube.items()}
@@ -90,7 +90,7 @@ if seccion == "📊 Dashboard":
         st.error(f"Error al conectar con la API: {e}")
         st.info("Asegúrate de que el servidor de FastAPI esté corriendo en la dirección configurada.")
 
-elif seccion == "🔎 Buscador":
+elif seccion == "Buscador":
     st.subheader("Buscador semántico")
     st.caption("Escribe una frase y la API devuelve los versículos más similares (TF-IDF + similitud coseno).")
 
@@ -98,7 +98,7 @@ elif seccion == "🔎 Buscador":
 
     if frase_ingresada:
         try:
-            frases_similares = api_get(DEFAULT_API_URL, "/api/buscador/buscar", params={"frase": frase_ingresada, "n": 20})
+            frases_similares = api_get(DEFAULT_API_URL, "/buscador/buscar", params={"frase": frase_ingresada, "n": 20})
             if frases_similares:
                 df_similares = pd.DataFrame(frases_similares)
                 st.dataframe(df_similares, hide_index=True, use_container_width=True)
@@ -107,12 +107,12 @@ elif seccion == "🔎 Buscador":
         except Exception as e:
             st.error(f"Error al conectar con la API: {e}")
 
-elif seccion == "✍️ Generador":
+elif seccion == "Generador":
     st.subheader("Generador de versículos (modelos de n-gramas)")
     st.caption("La API construye modelos de n-gramas sobre el corpus y genera texto palabra por palabra.")
 
     try:
-        modelos = api_get(DEFAULT_API_URL, "/api/generador/modelos", params=None)
+        modelos = api_get(DEFAULT_API_URL, "/generador/modelos", params=None)
     except Exception:
         modelos = ["unigram", "bigram", "trigram"]
 
@@ -128,7 +128,7 @@ elif seccion == "✍️ Generador":
         try:
             st.session_state["gen_resultado"] = api_get(
                 DEFAULT_API_URL,
-                "/api/generador/generar",
+                "/generador/generar",
                 params={"modelo": modeloSeleccionado, "palabra_inicial": palabraInicial, "largo_maximo": largoMaximo},
             )
         except Exception as e:
