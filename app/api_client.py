@@ -28,13 +28,17 @@ def nube_palabras(base_url: str, params: dict | None = None):
 def buscar(base_url: str, frase: str, n: int = 20):
     return api_get(base_url, "/buscador/buscar", {"frase": frase, "n": n})
 
+#Visualizador
+def coordenadas(base_url: str, metodo: str = "tfidf", dim: int = 2):
+    return api_get(base_url, "/visualizador/coordenadas", {"metodo": metodo, "dim": dim})
+
 #Generador
 def generador_modelos(base_url: str):
     return api_get(base_url, "/generador/modelos")
 
 def generar(base_url: str, modelo: str, palabra_inicial: str, largo_maximo: int):
     return api_get(base_url, "/generador/generar", {
-        "modelo": modelo,
+        "modelo": modelo, 
         "palabra_inicial": palabra_inicial,
         "largo_maximo": largo_maximo,
     })

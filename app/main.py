@@ -1,6 +1,6 @@
 import os
 import streamlit as st
-from views import dashboard_view, buscador_view, generador_view
+from views import dashboard_view, buscador_view, generador_view, visualizador_view
 from dotenv import load_dotenv
 
 DEFAULT_API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
@@ -25,6 +25,6 @@ if vista == "Dasboard":
 elif vista == "Buscador":
     buscador_view.render()
 elif vista == "Visualizador":
-    pass    
+    visualizador_view.render()
 else:
     generador_view.render()
