@@ -3,7 +3,7 @@ from pathlib import Path
 
 class CargadorDatos:
     def __init__(self, ruta = None):
-        if ruta == None:
+        if ruta is None:
             self.ruta = Path(__file__).resolve().parent.parent / "data"
         else:
             self.ruta = ruta

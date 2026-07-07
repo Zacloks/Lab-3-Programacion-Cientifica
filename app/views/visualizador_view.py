@@ -8,7 +8,6 @@ from api_client import coordenadas
 load_dotenv()
 DEFAULT_API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
-
 def render():
     st.subheader("Visualizador de versículos (PCA / Word2Vec)")
     st.caption("Cada punto es un versículo proyectado a 2D/3D. Coloreado por testamento.")

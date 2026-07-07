@@ -33,9 +33,6 @@ def coordenadas(base_url: str, metodo: str = "tfidf", dim: int = 2):
     return api_get(base_url, "/visualizador/coordenadas", {"metodo": metodo, "dim": dim})
 
 #Generador
-def generador_modelos(base_url: str):
-    return api_get(base_url, "/generador/modelos")
-
 def generar(base_url: str, modelo: str, palabra_inicial: str, largo_maximo: int):
     return api_get(base_url, "/generador/generar", {
         "modelo": modelo, 

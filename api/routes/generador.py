@@ -5,10 +5,6 @@ from api.df import get_df
 router = APIRouter()
 generador = GeneradorNgramas(get_df(), orden_maximo=3)
 
-@router.get("/generador/modelos")
-def generador_modelos():
-    return generador.modelos_disponibles()
-
 @router.get("/generador/generar")
 def generar_versiculo(
     modelo: str = Query("bigram", description="unigram, bigram o trigram"),
